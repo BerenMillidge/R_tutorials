@@ -55,3 +55,16 @@ plot(fn)
 # which is cool, and really easy that!
 
 # there are also stem and leaf plots...
+# these are trivially created with the stem fucntion
+stem(duration)
+
+# a scatter plot is also trivial to impleent here
+# just a plot with two input arguments
+plot(duration, waiting, xlab='Eruption Duration', ylab='Time waited')
+# and you can plot  a linear regression with the lm functoin and a line 
+# between them with the abline
+# - R is truly amazing for this but OTOH, Julia can call all r_libraries
+# perfectly so really there is no disadvantage there particularly, except 
+# presumably around interoperability?
+abline(lm(waiting ~ duration))
+
