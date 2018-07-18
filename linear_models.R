@@ -109,3 +109,57 @@ apples.homoscedastic
 
 # so p = 0.1364 - so edging towards significance but not yet there
 # so that's good too - assumptinos are met!
+
+# so let's examine the model result using plot - gives four graphs
+# a QQ plot of reisudla,s a scale locatio nplot, a plot of residuals
+# vs leverage (what is this?) - i.e. presumably whether there are points
+# which have huge influence on outcomes?
+#anyhow...
+plot(apples.m)
+# so on the QQ plot they mostly stick to the line which is really good. Come off a bit at the edges, but that's fairly normal I would suspect!
+
+# okay, so that was a general linear model. But what if data aren't normal!?
+# here use a generalised linear model which can use other distibutions
+# i.e. a poisson
+# use the shagLPI dataset
+getwd()
+setwd("/home/beren/work/phd/eyetracking")
+shag <- read.csv("shagLPI.csv", sep = ",")
+head(shag)
+#set year t obe numeric
+shag$year <- as.numeric(shag$year)
+# okay, data is loaded that's niec!
+# make a histrogram to look at th sdistibution
+shag.hist <- ggplot(shag, aes(pop)) + geom_histogram() + theme.clean()
+shag.hist
+
+# data represent data counts/event counts in intervals
+# so a poisson distibution is the correct one!
+# so create a generalised linear model with poisson
+# not that difficult
+shag.m <- glm(pop ~ year, family=poisson, data=shag)
+summary(shag.m)
+plot(shag.m)
+# I still have no idea what this residuals vs leverage plot
+# actuall means, which isn'treally ideal!
+# the data is highly significant though, which is nice.
+# let's plot the graph generally
+shag.p <- ggplot(shag, aes(x = year, y = pop)) + 
+  geom_point(colour = "#483D8B") + 
+  geom_smooth(method=glm, colour="#483D8B", fill="#483D8B", alpha=0.6) + 
+  scale_x_continuous(breaks=c(1975, 1985, 1990, 1995, 2000, 2005)) +
+  theme.clean() + 
+  labs(x=" " , y = "European Shag abundance")
+
+shag.p
+
+# so that's awesome. you can really create really neat graphs in R
+# whic his perfect, and presumably why it is used so much. that's  really cooL!
+# aes is apaprently an aesthetic function which maps geom properties
+# to your data items. that makes sense!
+
+# can also make models with binomial data too
+weevil <- read.csv("Weevil_damage.csv", sep = ",")
+weevil$block <- as.factor(weevil$block)
+weevil.m <- glm(damage_T_F ~ block,family=binomial, data=weevil)
+summary(weevil.m)
