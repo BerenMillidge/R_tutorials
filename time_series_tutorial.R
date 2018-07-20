@@ -108,3 +108,68 @@ seasonplot(monthly_milk_ts)
 # and that... that's so cool!
 
 # so obviously just plotting trends over time is not enough... ultimately you want to forecast!
+# one method is ETS methods - ets = error, trend, seasonality
+# these are also called exponential smoothing state space models
+# so it essneitally weights influenec of previous points based no how mnuch time is between them
+# so its essentially a kind of weighted moving average
+# other methods are ARIMA - autoregressive models which describe
+# autocorrelations inthe data instead of trends and seasonliy
+# so this: https://www.otexts.org/fpp - looks like a very simple - but decent
+# introduction to how forecasting actually works and does stuff properly
+# which makes perfect sense, and I should work through at some point... perhaps after the
+# general linear model book to udnerstand the basics underlying LMER
+# so ultiately should create obviously training ,validation, and test sets
+# forvarious things... to test the reasonableness of the models... s let's do that!
+
+monthly_milk_model <- window(x=monthly_milk_ts, start=c(1962), end=c(1970))
+monthly_milk_test <- window(x=monthly_milk_ts, start=c(1970))
+
+# so let's test various tpes of model
+milk_ets_auto <- ets(monthly_milk_model)
+milk_ets_mmm <- ets(monthyl_milk_model, model='MMM')
+milk_ets_zzz <- ets(monthly_milk_model, model='ZZZ')
+milk_ets_mmm_dampled <- ets(monthly_milk_model, model='MMM', damped = TRUE)
+
+# create forecast objecs from the model objects
+milk_ets_fc <- forecast(milk_ets_auto, h=60)
+milk_ets_mmm_fc <- forecast(milk_ets_mmm, h=60)
+milk_ets_zzz_fc <- forecast(milk_ets_zzz, h = 60)
+milk_ets_mmm_damped_fc <- forecast(milk_ets_mmm_damped, h = 60)
+
+# Convert forecasts to data frames
+milk_ets_fc_df <- cbind("Month" = rownames(as.data.frame(milk_ets_fc)), as.data.frame(milk_ets_fc))  # Creating a data frame
+names(milk_ets_fc_df) <- gsub(" ", "_", names(milk_ets_fc_df))  # Removing whitespace from column names
+milk_ets_fc_df$Date <- as.Date(paste("01-", milk_ets_fc_df$Month, sep = ""), format = "%d-%b %Y")  # prepending day of month to date
+milk_ets_fc_df$Model <- rep("ets")  # Adding column of model type
+
+milk_ets_mmm_fc_df <- cbind("Month" = rownames(as.data.frame(milk_ets_mmm_fc)), as.data.frame(milk_ets_mmm_fc))
+names(milk_ets_mmm_fc_df) <- gsub(" ", "_", names(milk_ets_mmm_fc_df))
+milk_ets_mmm_fc_df$Date <- as.Date(paste("01-", milk_ets_mmm_fc_df$Month, sep = ""), format = "%d-%b %Y")
+milk_ets_mmm_fc_df$Model <- rep("ets_mmm")
+
+milk_ets_zzz_fc_df <- cbind("Month" = rownames(as.data.frame(milk_ets_zzz_fc)), as.data.frame(milk_ets_zzz_fc))
+names(milk_ets_zzz_fc_df) <- gsub(" ", "_", names(milk_ets_zzz_fc_df))
+milk_ets_zzz_fc_df$Date <- as.Date(paste("01-", milk_ets_zzz_fc_df$Month, sep = ""), format = "%d-%b %Y")
+milk_ets_zzz_fc_df$Model <- rep("ets_zzz")
+
+milk_ets_mmm_damped_fc_df <- cbind("Month" = rownames(as.data.frame(milk_ets_mmm_damped_fc)), as.data.frame(milk_ets_mmm_damped_fc))
+names(milk_ets_mmm_damped_fc_df) <- gsub(" ", "_", names(milk_ets_mmm_damped_fc_df))
+milk_ets_mmm_damped_fc_df$Date <- as.Date(paste("01-", milk_ets_mmm_damped_fc_df$Month, sep = ""), format = "%d-%b %Y")
+milk_ets_mmm_damped_fc_df$Model <- rep("ets_mmm_damped")
+
+# Combining into one data frame
+forecast_all <- rbind(milk_ets_fc_df, milk_ets_mmm_fc_df, milk_ets_zzz_fc_df, milk_ets_mmm_damped_fc_df)
+
+# Plotting with ggplot
+ggplot() +
+  geom_line(data = monthly_milk, aes(x = month_date, y = milk_prod_per_cow_kg)) +  # Plotting original data
+  geom_line(data = forecast_all, aes(x = Date, y = Point_Forecast, colour = Model)) +  # Plotting model forecasts
+  theme_classic()
+
+accuracy(milk_ets_fc, monthly_milk_test)
+accuracy(milk_ets_mmm_fc, monthly_milk_test)
+accuracy(milk_ets_zzz_fc, monthly_milk_test)
+accuracy(milk_ets_mmm_damped_fc, monthly_milk_test)
+# so that's cool yo ucan test a bunch of statistics to determine
+# the outcome of the forecasting models and see how that all worked
+# which is really cool... but who knows?
