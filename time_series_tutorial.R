@@ -78,3 +78,33 @@ ggplot(daily_milk, aes(x=date_time_posix, y=milk_prod_per_cow_kg)) +
 
 # extract month and year and store in separate columns - this i sthe kind of 
 # data analysis I need to actually start doing on eyetracking with R
+monthly_milk$year <- format(monthly_milk$month_date, format="%Y")
+monthly_milk$month_num <- format(monthly_milk$month_date, format = "%m")
+
+# create a colour palette using colour tools package
+year_pal <- sequential(color="darkturquoise", percentage=5, what="value")
+
+# make the lpot
+ggplot(monthly_milk, aes(x=month_num, y=milk_prod_per_cow_kg, group=year)) +
+  geom_line(aes(colour=year)) + 
+  theme_classic() + 
+  scale_color_manual(values=year_pal)
+
+# so yeah, alternatively you can try to convert the time series
+# into a specially desigated time series 'ts' object and then decompose it
+#using stl() 
+#transform to ts
+monthly_milk_ts <- ts(monthly_milk$milk_prod_per_cow_kg, start=1962, end=1975, freq=12)
+
+# decompose
+monthly_milk_stl <-stl(monthly_milk_ts, s.window ='period')
+
+# generate plots
+plot(monthly_milk_stl)
+# ooh! that generates a whole lod of easy plots which is awesome!
+monthplot(monthly_milk_ts, choice="seasonal")
+# oh wow! R is realy great at that... that's so cool
+seasonplot(monthly_milk_ts)
+# and that... that's so cool!
+
+# so obviously just plotting trends over time is not enough... ultimately you want to forecast!
